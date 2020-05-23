@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const Book = require("./../models/book");
-const Author = require("./../models/author");
 
 //Middleware
 router.use("/books/:book", (req, res, next) => {
@@ -21,15 +20,17 @@ router.use("/books/:book", (req, res, next) => {
 router.get("/books", (req, res) => {
   Book.find({}).then((books) => {
     if (books) {
-      const booksUpdated = books.map((item) => {
-        const i = item.toObject();
-        i._links = {
-          rel: "self",
-          href: "http://localhost:4000/api/books/" + item._id,
+      const bookTitles = books.map((item) => {
+        let i = {
+          title: item.title,
+          _links: {
+            rel: "details/self",
+            href: "http://localhost:4000/api/books/" + item._id,
+          },
         };
         return i;
       });
-      return res.json(booksUpdated);
+      return res.json(bookTitles);
     }
     return res.status(401).send("No books currently in the database!");
   });
@@ -49,16 +50,11 @@ router.post("/books", (req, res) => {
 //get a specific book out of the dB via ID
 router.get("/books/:book", (req, res) => {
   let i = req.book.toObject();
-  i._links = [
-    {
-      rel: "self",
-      href: "http://localhost:4000/api/books/" + req.book._id,
-    },
-    {
-      rel: "list/all",
-      href: "http://localhost:4000/api/books",
-    },
-  ];
+  i._links = {
+    rel: "list/all",
+    href: "http://localhost:4000/api/books",
+  };
+
   res.json(i);
 });
 
